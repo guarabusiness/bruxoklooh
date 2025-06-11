@@ -1,0 +1,1142 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bruxo Klooh - Serviços Mágicos e Esotéricos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Roboto+Slab:wght@500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4A2C5E;
+            --secondary-color: #2E1A3B;
+            --accent-color: #6B4E82;
+            --dark-color: #1C2526;
+            --light-color: #E8ECEF;
+            --white: #F8F9FA;
+            --text-color: #2D2D2D;
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            font-weight: 400;
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+                        url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: var(--white);
+            padding: 40px 0;
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow);
+            border-bottom: 6px solid var(--primary-color);
+        }
+        
+        .header-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            z-index: 1;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            font-family: 'Roboto Slab', serif;
+            font-size: 3.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--white);
+            letter-spacing: 1.5px;
+        }
+        
+        .logo-subtext {
+            font-size: 1.6rem;
+            font-weight: 400;
+            color: var(--white);
+            margin-bottom: 20px;
+        }
+        
+        .contact-info {
+            background-color: var(--primary-color);
+            display: inline-block;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 500;
+            box-shadow: var(--shadow);
+        }
+        
+        /* Navigation */
+        nav {
+            background-color: var(--dark-color);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .nav-logo {
+            font-family: 'Roboto Slab', serif;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            display: none;
+        }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-menu li {
+            margin: 0 15px;
+        }
+        
+        .nav-menu a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-menu a:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+        
+        /* Hero Section */
+        .hero {
+            position: relative;
+            height: 450px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 60px;
+            box-shadow: var(--shadow);
+        }
+        
+        .hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .hero-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 30px;
+            background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+            color: var(--white);
+        }
+        
+        .hero-title {
+            font-family: 'Roboto Slab', serif;
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .hero-text {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            max-width: 550px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 2px solid var(--primary-color);
+        }
+        
+        .btn:hover {
+            background-color: transparent;
+            color: var(--primary-color);
+        }
+        
+        /* Sections */
+        .section {
+            margin-bottom: 70px;
+        }
+        
+        .section-title {
+            font-family: 'Roboto Slab', serif;
+            font-size: 2rem;
+            color: var(--dark-color);
+            margin-bottom: 30px;
+            position: relative;
+            padding-bottom: 12px;
+            text-align: center;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background-color: var(--secondary-color);
+            border-radius: 2px;
+        }
+        
+        /* Services */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        
+        .service-card {
+            background-color: var(--white);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+        
+        .service-card:hover {
+            transform: scale(1.02);
+        }
+        
+        .service-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: var(--secondary-color);
+            color: var(--white);
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .service-image {
+            height: 180px;
+            width: 100%;
+            object-fit: cover;
+        }
+        
+        .service-info {
+            padding: 20px;
+        }
+        
+        .service-name {
+            font-family: 'Roboto Slab', serif;
+            font-size: 1.3rem;
+            color: var(--dark-color);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .service-description {
+            color: var(--text-color);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        /* About Section */
+        .about-content {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .about-image {
+            flex: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        
+        .about-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .about-text {
+            flex: 1;
+        }
+        
+        .about-text p {
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+        
+        /* Location Section */
+        .location-container {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .location-info {
+            flex: 1;
+        }
+        
+        .location-info p {
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+        
+        .location-map {
+            flex: 1;
+            height: 350px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            aspect-ratio: 1/1;
+        }
+        
+        .location-map iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Gallery Section */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .gallery-item {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+            aspect-ratio: 1/1;
+        }
+        
+        .gallery-item:hover {
+            transform: scale(1.02);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Testimonials */
+        .testimonials {
+            background-color: var(--dark-color);
+            padding: 50px 0;
+            color: var(--white);
+        }
+        
+        .testimonials-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .testimonials-title {
+            text-align: center;
+            margin-bottom: 40px;
+            font-family: 'Roboto Slab', serif;
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+        
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        .testimonial-card {
+            background-color: rgba(255,255,255,0.05);
+            padding: 25px;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .testimonial-card::before {
+            content: '"';
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 3rem;
+            color: rgba(255,255,255,0.1);
+            font-family: serif;
+        }
+        
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+            font-size: 0.95rem;
+        }
+        
+        .testimonial-author {
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--dark-color);
+            color: var(--white);
+            padding: 50px 0 20px;
+        }
+        
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            padding: 0 20px;
+        }
+        
+        .footer-logo {
+            font-family: 'Roboto Slab', serif;
+            font-size: 1.6rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+        
+        .footer-about p {
+            margin-bottom: 15px;
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+        
+        .footer-social {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .footer-social a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            color: var(--white);
+            transition: background-color 0.3s;
+        }
+        
+        .footer-social a:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .footer-title {
+            font-family: 'Roboto Slab', serif;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .footer-links li {
+            margin-bottom: 8px;
+            list-style: none;
+        }
+        
+        .footer-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary-color);
+        }
+        
+        .footer-contact p {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .footer-contact i {
+            color: var(--primary-color);
+            width: 18px;
+            text-align: center;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            margin-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+        }
+        
+        /* Mobile Menu */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background-color: var(--dark-color);
+            z-index: 1000;
+            transition: right 0.3s;
+            padding: 20px;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.2);
+        }
+        
+        .mobile-menu.active {
+            right: 0;
+        }
+        
+        .mobile-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .mobile-menu-logo {
+            font-family: 'Roboto Slab', serif;
+            font-size: 1.4rem;
+            color: var(--primary-color);
+        }
+        
+        .mobile-menu-close {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.4rem;
+            cursor: pointer;
+        }
+        
+        .mobile-nav {
+            list-style: none;
+        }
+        
+        .mobile-nav li {
+            margin-bottom: 12px;
+        }
+        
+        .mobile-nav a {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 1rem;
+            display: block;
+            padding: 8px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .mobile-nav a:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .mobile-menu-footer {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+        }
+        
+        .mobile-social {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .mobile-social a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            color: var(--white);
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* WhatsApp Button */
+        .whatsapp-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 55px;
+            height: 55px;
+            background-color: #13805F;
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: var(--shadow);
+            z-index: 999;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+        
+        .whatsapp-button:hover {
+            background-color: #0F664E;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .logo {
+                font-size: 2.6rem;
+            }
+            
+            .logo-subtext {
+                font-size: 1.4rem;
+            }
+            
+            .about-content, .location-container {
+                flex-direction: column;
+            }
+            
+            .about-image, .location-info, .location-map {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+            
+            .mobile-menu-btn, .nav-logo {
+                display: block;
+            }
+            
+            .hero {
+                height: 350px;
+            }
+            
+            .hero-content {
+                padding: 20px;
+            }
+            
+            .hero-title {
+                font-size: 1.8rem;
+            }
+            
+            .section-title {
+                font-size: 1.7rem;
+            }
+            
+            .testimonials-title {
+                font-size: 1.7rem;
+            }
+            
+            .whatsapp-button {
+                width: 45px;
+                height: 45px;
+                font-size: 22px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .logo-subtext {
+                font-size: 1.1rem;
+            }
+            
+            .contact-info {
+                font-size: 0.85rem;
+                padding: 8px 20px;
+            }
+            
+            .hero {
+                height: 300px;
+                margin-bottom: 40px;
+            }
+            
+            .hero-content {
+                padding: 15px;
+            }
+            
+            .hero-title {
+                font-size: 1.5rem;
+            }
+            
+            .hero-text {
+                font-size: 0.95rem;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.85rem;
+            }
+            
+            .section {
+                margin-bottom: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <div class="mobile-menu-logo">Bruxo Klooh</div>
+            <button class="mobile-menu-close" id="mobileMenuClose">×</button>
+        </div>
+        <ul class="mobile-nav">
+            <li><a href="#home">Início</a></li>
+            <li><a href="#about">Sobre Mim</a></li>
+            <li><a href="#services">Serviços</a></li>
+            <li><a href="#gallery">Galeria</a></li>
+            <li><a href="#location">Localização</a></li>
+        </ul>
+        <div class="mobile-menu-footer">
+            <div class="mobile-social">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- WhatsApp Button -->
+    <a href="https://wa.me/5527992033195" class="whatsapp-button" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+    
+    <!-- Header -->
+    <header id="home">
+        <div class="header-overlay"></div>
+        <div class="header-content">
+            <h1 class="logo">BRUXO KLOOH</h1>
+            <div class="logo-subtext">TRABALHOS ESPIRITUAIS</div>
+            <div class="contact-info">27 99203-3195</div>
+        </div>
+    </header>
+    
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="nav-logo">Bruxo Klooh</div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-menu">
+                <li><a href="#home">Início</a></li>
+                <li><a href="#about">Sobre Mim</a></li>
+                <li><a href="#services">Serviços</a></li>
+                <li><a href="#gallery">Galeria</a></li>
+                <li><a href="#location">Localização</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <img src="https://github.com/guarabusiness/bruxoklooh/blob/main/imagens/1.jpg?raw=true" alt="Bruxo Klooh" class="hero-image">
+            <div class="hero-content">
+                <h2 class="hero-title">Soluções Espirituais para sua Vida</h2>
+                <p class="hero-text">Com décadas de experiência em práticas esotéricas, ofereço serviços personalizados para promover equilíbrio, proteção e realização.</p>
+                <a href="#services" class="btn">Conheça meus serviços</a>
+            </div>
+        </section>
+        
+        <!-- Services Section -->
+        <section id="services" class="section">
+            <h2 class="section-title">Meus Serviços</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-badge">Mais procurado</div>
+                    <img src="https://github.com/guarabusiness/bruxoklooh/blob/main/imagens/2.jpg?raw=true" alt="Amarração Amorosa" class="service-image">
+                    <div class="service-info">
+                        <h3 class="service-name">Amarração Amorosa</h3>
+                        <p class="service-description">Ritual poderoso para unir corações e trazer de volta a pessoa amada. Feito com ervas sagradas e velas ritualísticas.</p>
+                    </div>
+                </div>
+                
+                <div class="service-card">
+                    <img src="https://github.com/guarabusiness/bruxoklooh/blob/main/imagens/4.jpg?raw=true" alt="Limpeza Espiritual" class="service-image">
+                    <div class="service-info">
+                        <h3 class="service-name">Limpeza Espiritual</h3>
+                        <p class="service-description">Remoção completa de energias negativas e bloqueios espirituais que possam estar afetando sua vida.</p>
+                    </div>
+                </div>
+                
+                <div class="service-card">
+                    <img src="https://github.com/guarabusiness/bruxoklooh/blob/main/imagens/3.jpg?raw=true" alt="Quebra de Demanda" class="service-image">
+                    <div class="service-info">
+                        <h3 class="service-name">Quebra de Demanda</h3>
+                        <p class="service-description">Rituais poderosos de Quimbanda para quebrar demandas urgentes, feitiços e invejas, livrando você de trabalhos pesados com força e proteção.</p>
+                    </div>
+                </div>
+                
+                <div class="service-card">
+                    <img src="https://github.com/guarabusiness/bruxoklooh/blob/main/imagens/5.jpg?raw=true" alt="Abertura de Caminhos" class="service-image">
+                    <div class="service-info">
+                        <h3 class="service-name">Abertura de Caminhos</h3>
+                        <p class="service-description">Ritual para remover obstáculos e atrair novas oportunidades em todas as áreas da vida.</p>
+                    </div>
+                </div>
+                
+                <div class="service-card">
+                    <img src="https://github.com/guarabusiness/bruxoklooh/blob/main/imagens/S5.jpg?raw=true" alt="Leitura de Cartas" class="service-image">
+                    <div class="service-info">
+                        <h3 class="service-name">Leitura de Cartas</h3>
+                        <p class="service-description">Consulta detalhada com cartas de tarô para orientação espiritual, revelando caminhos e respostas para suas dúvidas.</p>
+                    </div>
+                </div>
+                
+                <div class="service-card">
+                    <img src="https://github.com/guarabusiness/bruxoklooh/blob/main/imagens/S6.png?raw=true" alt="Búzios" class="service-image">
+                    <div class="service-info">
+                        <h3 class="service-name">Búzios</h3>
+                        <p class="service-description">Leitura tradicional de búzios para conexão com os orixás, oferecendo insights profundos sobre seu destino e proteção.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- About Section -->
+        <section id="about" class="section">
+            <h2 class="section-title">Sobre Mim</h2>
+            <div class="about-content">
+                <div class="about-image">
+                    <img src="https://github.com/guarabusiness/bruxoklooh/blob/main/imagens/bruxo-klooh.jpg?raw=true" alt="Bruxo Klooh">
+                </div>
+                <div class="about-text">
+                    <p>Há 34 anos, iniciei minha jornada espiritual no Candomblé, mas minha busca pelo sagrado não se limitou a uma única tradição. Sou também praticante de Umbanda e Quimbanda, trilhando um caminho de sabedoria, equilíbrio e força por meio dessas diferentes vertentes.</p>
+                    <p>Ao longo desses anos, tive a honra de realizar diversos trabalhos espirituais para pessoas influentes, sempre com seriedade, ética e dedicação. Minha atuação vai além do convencional, pois acredito que a espiritualidade deve ser acessível a todos, independentemente de posição social.</p>
+                    <p>No município de Guarapari, conquistei reconhecimento e respeito, tornando-me uma das personalidades mais influentes da região. Minha trajetória é marcada pela confiança que as pessoas depositam em mim, seja pela orientação espiritual, pelos trabalhos realizados ou pela minha postura ética e comprometida.</p>
+                    <p>Estou sempre aberto a compartilhar conhecimentos, ajudar aqueles que buscam luz e fortalecer os laços entre o mundo material e o espiritual. Minha missão é servir com sabedoria, humildade e firmeza, honrando as tradições que carrego e a confiança de todos que cruzam o meu caminho.</p>
+                    <p>Axé, Saravá e Que os Exus me abram os caminhos!</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Gallery Section -->
+        <section id="gallery" class="section">
+            <h2 class="section-title">Minha Galeria</h2>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="https://github.com/guarabusiness/bruxoklooh/blob/main/imagens/g1.jpg?raw=true" alt="Ritual">
+                </div>
+                <div class="gallery-item">
+                    <img src="https://github.com/guarabusiness/bruxoklooh/blob/main/imagens/g2.jpg?raw=true" alt="Ervas">
+                </div>
+                <div class="gallery-item">
+                    <img src="https://github.com/guarabusiness/bruxoklooh/blob/main/imagens/g3.jpg?raw=true" alt="Velas">
+                </div>
+                <div class="gallery-item">
+                    <img src="https://github.com/guarabusiness/bruxoklooh/blob/main/imagens/g4.jpg?raw=true" alt="Cristais">
+                </div>
+                <div class="gallery-item">
+                    <img src="https://github.com/guarabusiness/bruxoklooh/blob/main/imagens/g5.jpg?raw=true" alt="Amuletos">
+                </div>
+                <div class="gallery-item">
+                    <img src="https://github.com/guarabusiness/bruxoklooh/blob/main/imagens/g6.jpg?raw=true" alt="Ambiente">
+                </div>
+            </div>
+        </section>
+        
+        <!-- Location Section -->
+        <section id="location" class="section">
+            <h2 class="section-title">Localização</h2>
+            <div class="location-container">
+                <div class="location-info">
+                    <p>Meu espaço sagrado está localizado em um ambiente tranquilo e energeticamente preparado para receber clientes e realizar os trabalhos necessários.</p>
+                    <p><strong>Endereço:</strong> R. Lorraine Santiago Vieira, 432 - Adalberto Simao Nader, Guarapari - ES, 29214-330</p>
+                    <p><strong>Telefone:</strong> (27) 99203-3195</p>
+                    <p><strong>Atendimento:</strong> Com horário marcado, ou em dias de eventos.</p>
+                </div>
+                <div class="location-map">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3742.151419441445!2d-40.301316!3d-20.306958!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xb817f913be2357%3A0x69ae1d6b3a453cdf!2sR.%20Lorraine%20Santiago%20Vieira%2C%20432%20-%20Adalberto%20Simao%20Nader%2C%20Guarapari%20-%20ES%2C%2029214-330!5e0!3m2!1spt-BR!2sbr!4v1717222736435!5m2!1spt-BR!2sbr" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+        <div class="testimonials-container">
+            <h2 class="testimonials-title">Depoimentos de Clientes</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">O Bruxo Klooh realizou uma amarração para mim e em menos de um mês meu amor voltou! Estamos mais unidos do que nunca. Recomendo muito seu trabalho sério e eficiente.</p>
+                    <p class="testimonial-author">- Ana Paula</p>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">Fiz uma limpeza espiritual com o Klooh e minha vida mudou completamente. A energia pesada que eu carregava sumiu e agora me sinto mais leve e feliz.</p>
+                    <p class="testimonial-author">- Carlos Eduardo</p>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">O ritual de abertura de caminhos que o Bruxo Klooh fez para mim trouxe oportunidades incríveis no trabalho. Em duas semanas recebi uma proposta de emprego muito melhor!</p>
+                    <p class="testimonial-author">- Mariana Silva</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-about">
+                <a href="#" class="footer-logo">Bruxo Klooh</a>
+                <p>Serviços espirituais para promover equilíbrio, proteção e realização. Atendimento ético com resultados comprovados.</p>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h3 class="footer-title">Links Rápidos</h3>
+                <ul>
+                    <li><a href="#home">Início</a></li>
+                    <li><a href="#about">Sobre Mim</a></li>
+                    <li><a href="#services">Serviços</a></li>
+                    <li><a href="#gallery">Galeria</a></li>
+                    <li><a href="#location">Localização</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h3 class="footer-title">Contato</h3>
+                <p><i class="fas fa-map-marker-alt"></i> R. Lorraine Santiago Vieira, 432 - Adalberto Simao Nader, Guarapari - ES, 29214-330</p>
+                <p><i class="fas fa-phone"></i> 27 99203-3195</p>
+                <p><i class="fas fa-calendar-alt"></i> Atendimento com horário marcado, ou em dia de eventos.</p>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>© <span id="current-year"></span> Bruxo Klooh. Todos os direitos reservados.</p>
+            Guara Business Technologies
+       </div>
+    </footer>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <script>
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenuClose = document.getElementById('mobileMenuClose');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const overlay = document.getElementById('overlay');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        
+        mobileMenuClose.addEventListener('click', () => {
+            mobileMenu.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        
+        overlay.addEventListener('click', () => {
+            mobileMenu.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Set current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // Sticky navigation
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 100) {
+                nav.style.position = 'fixed';
+                nav.style.top = '0';
+                nav.style.width = '100%';
+                nav.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+            } else {
+                nav.style.position = 'relative';
+                nav.style.boxShadow = 'none';
+            }
+        });
+        
+        // Animation on scroll
+        const animateOnScroll = () => {
+            const elements = document.querySelectorAll('.section, .service-card, .testimonial-card, .gallery-item');
+            
+            elements.forEach(element => {
+                const elementPosition = element.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                
+                if (elementPosition < windowHeight - 100) {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }
+            });
+        };
+        
+        // Initialize elements with opacity 0 and slight offset
+        document.querySelectorAll('.section, .service-card, .testimonial-card, .gallery-item').forEach(element => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(20px)';
+            element.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        });
+        
+        window.addEventListener('scroll', animateOnScroll);
+        window.addEventListener('load', animateOnScroll);
+    </script>
+
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NZVTT08D0M"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-NZVTT08D0M');
+</script>
+
+
+
+</body>
+</html>
